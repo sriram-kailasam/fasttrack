@@ -23,8 +23,30 @@ export class AdmitRequestController {
     res.json({ success: true });
   };
 
+  findAllRequests = async (req: Request, res: Response) => {
+    const requestIds: string[] = await this.redis.smembers(
+      "pending-admit-requests"
+    );
+    const requests = requestIds.map(id => {
+      return {
+        id: id,
+        tag: ["heart", "ortho", "cardio", "ocular", "neuro"][
+          Math.floor(Math.random() * 5)
+        ],
+        gender: Math.random() > 0.5 ? "male" : "female",
+        eta: Math.random() * 20,
+        lat: -50 + Math.random() * 100,
+        lng: -50 + Math.random() * 100,
+        age: 15 + Math.random() * 50
+      };
+    });
+
+    res.json({ success: true, requests });
+  };
+
   register() {
     this.router.post("/", this.findNearbyHospitals);
+    this.router.get("/", this.findAllRequests);
 
     return this.router;
   }
