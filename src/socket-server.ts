@@ -11,7 +11,7 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
     const hospitalId = hospital.id;
 
     socket.emit("message", hospitalId);
-    this.redis.sadd("hospitals", hospitalId);
+    redis.sadd("hospitals", hospitalId);
 
     socket.on("admit-request-accept", async data => {
       if (
