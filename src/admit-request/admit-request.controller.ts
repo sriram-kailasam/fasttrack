@@ -1,27 +1,10 @@
 import io from "socket.io";
 import { Router, Request, Response } from "express";
 import { Redis } from "ioredis";
-import { HospitalService } from "../hospitals/hospitals.service";
 
 export class AdmitRequestController {
   private router = Router();
   constructor(private socketServer: io.Server, private redis: Redis) {}
-
-  findNearbyHospitals = async (req: Request, res: Response) => {
-    if (req.body.admitRequestId == null || req.body.admitRequestId == "") {
-      return res
-        .status(400)
-        .json({ success: false, error: "Admit request ID cannot be empty" });
-    }
-
-    this.socketServer.sockets.emit(
-      "admit-request",
-      "New admit request: " + req.body.admitRequestId
-    );
-    this.redis.sadd("pending-admit-requests", req.body.admitRequestId);
-
-    res.json({ success: true });
-  };
 
   findAllRequests = async (req: Request, res: Response) => {
     const requestIds: string[] = await this.redis.smembers(
@@ -44,9 +27,22 @@ export class AdmitRequestController {
     res.json({ success: true, requests });
   };
 
+  requestAdmission = async (req: Request, res: Response) => {
+    const payload = {
+      location: req.body.location,
+      age: req.body.age,
+      eta: 0,
+      gender: req.body.gender,
+      tag: req.body.tag
+    };
+    this.socketServer.sockets.emit("admit-request", payload);
+
+    res.json({ success: true });
+  };
+
   register() {
-    this.router.post("/", this.findNearbyHospitals);
     this.router.get("/", this.findAllRequests);
+    this.router.post("/", this.requestAdmission);
 
     return this.router;
   }
