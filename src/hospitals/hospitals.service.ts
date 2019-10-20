@@ -17,9 +17,6 @@ export class HospitalService {
         }
       });
 
-      console.log("Status:", resp.status);
-      console.log(resp.data);
-
       return resp.data.results.map(place => {
         return {
           name: place.name,
