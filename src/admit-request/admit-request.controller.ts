@@ -1,4 +1,5 @@
 import io from "socket.io";
+import crypto from "crypto";
 import { Router, Request, Response } from "express";
 import { Redis } from "ioredis";
 
@@ -10,6 +11,7 @@ export class AdmitRequestController {
     const requestIds: string[] = await this.redis.smembers(
       "pending-admit-requests"
     );
+
     const requests = requestIds.map(id => {
       return {
         id: id,
@@ -29,13 +31,16 @@ export class AdmitRequestController {
 
   requestAdmission = async (req: Request, res: Response) => {
     const payload = {
+      id: crypto.randomBytes(20).toString(),
       location: req.body.location,
       age: req.body.age,
       eta: 0,
       gender: req.body.gender,
       tag: req.body.tag
     };
+
     this.socketServer.sockets.emit("admit-request", payload);
+    this.redis.sadd("pending-admit-requests", JSON.stringify(payload));
 
     res.json({ success: true });
   };
