@@ -3,6 +3,7 @@ import io from "socket.io";
 import http from "http";
 import bodyParser from "body-parser";
 import { configSocket } from "./socket-server";
+import cors from "cors";
 import Redis from "ioredis";
 
 import { HospitalService } from "./hospitals/hospitals.service";
@@ -18,6 +19,7 @@ const app = express();
 const httpServer = http.createServer(app);
 const socketServer = io(httpServer);
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
