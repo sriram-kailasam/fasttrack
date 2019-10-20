@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import { configSocket } from "./socket-server";
 import Redis from "ioredis";
 
+import { HospitalService } from "./hospitals/hospitals.service";
+import { HospitalsController } from "./hospitals/hospitals.controller";
+
 require("dotenv").config();
 
 const redis = new Redis(process.env.REDIS_URL);
@@ -18,9 +21,12 @@ const socketServer = io(httpServer);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const hospitalService = new HospitalService();
 const admitRequestController = new AdmitRequestController(socketServer, redis);
+const hospitalsController = new HospitalsController(hospitalService);
 
 app.use("/admit-request", admitRequestController.register());
+app.use("/hospitals", hospitalsController.register());
 
 configSocket(socketServer, redis);
 

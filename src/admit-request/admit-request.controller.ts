@@ -1,12 +1,13 @@
 import io from "socket.io";
 import { Router, Request, Response } from "express";
 import { Redis } from "ioredis";
+import { HospitalService } from "../hospitals/hospitals.service";
 
 export class AdmitRequestController {
   private router = Router();
   constructor(private socketServer: io.Server, private redis: Redis) {}
 
-  broadcastAdmitRequest = async (req: Request, res: Response) => {
+  findNearbyHospitals = async (req: Request, res: Response) => {
     if (req.body.admitRequestId == null || req.body.admitRequestId == "") {
       return res
         .status(400)
@@ -18,11 +19,12 @@ export class AdmitRequestController {
       "New admit request: " + req.body.admitRequestId
     );
     this.redis.sadd("pending-admit-requests", req.body.admitRequestId);
-    res.send({ success: true, hospitals: [] });
+
+    res.json({ success: true });
   };
 
   register() {
-    this.router.post("/", this.broadcastAdmitRequest);
+    this.router.post("/", this.findNearbyHospitals);
 
     return this.router;
   }
