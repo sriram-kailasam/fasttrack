@@ -28,6 +28,7 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
         socketServer.sockets.emit("admit-request-accept", {
           location: hospital.location,
           hospitalId,
+          hospitalName: hospital.name,
           admitRequestId: data.admitRequestId
         });
 
@@ -43,6 +44,10 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
         console.log("Already accepted", data);
         socket.emit("admit-request-already-accepted", data.admitRequestId);
       }
+    });
+
+    socket.on("admit-request-decline", async data => {
+      socket.emit("admit-request-decline", data);
     });
   });
 }
