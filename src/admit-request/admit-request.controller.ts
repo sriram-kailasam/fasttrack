@@ -19,7 +19,7 @@ export class AdmitRequestController {
 
     const requests = await this.db
       .collection("admit-requests")
-      .find({ $in: { id: requestIds } }, { projection: { _id: 0 } })
+      .find({ id: { $in: requestIds } }, { projection: { _id: 0 } })
       .toArray();
 
     res.json({ success: true, requests });
