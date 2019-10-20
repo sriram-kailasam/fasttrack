@@ -6,7 +6,7 @@ export class HospitalService {
     lng: number;
   }): Promise<any[]> {
     const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json";
-    const radius = 10000;
+    const radius = 30000;
     try {
       const resp = await axios.get(url, {
         params: {
