@@ -17,12 +17,14 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
       if (
         await redis.sismember("pending-admit-requests", data.admitRequestId)
       ) {
+        console.log("Accepted:", data);
         redis.srem("pending-admit-requests", data.admitRequestId);
 
         const hospital = await db
           .collection("hospitals")
           .findOne({ id: hospitalId });
 
+        console.log("Hospital", hospital);
         socketServer.sockets.emit("admit-request-accept", {
           location: hospital.location,
           hospitalId,
@@ -38,6 +40,7 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
           }
         );
       } else {
+        console.log("Already accepted", data);
         socket.emit("admit-request-already-accepted", data.admitRequestId);
       }
     });
