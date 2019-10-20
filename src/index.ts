@@ -5,33 +5,46 @@ import bodyParser from "body-parser";
 import { configSocket } from "./socket-server";
 import cors from "cors";
 import Redis from "ioredis";
+import { MongoClient } from "mongodb";
 
+import { AdmitRequestController } from "./admit-request/admit-request.controller";
 import { HospitalService } from "./hospitals/hospitals.service";
 import { HospitalsController } from "./hospitals/hospitals.controller";
 
 require("dotenv").config();
 
-const redis = new Redis(process.env.REDIS_URL);
+(async function() {
+  const redis = new Redis(process.env.REDIS_URL);
 
-import { AdmitRequestController } from "./admit-request/admit-request.controller";
+  const mongoClient = await MongoClient.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
 
-const app = express();
-const httpServer = http.createServer(app);
-const socketServer = io(httpServer);
+  const db = mongoClient.db();
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+  const app = express();
+  const httpServer = http.createServer(app);
+  const socketServer = io(httpServer);
 
-const hospitalService = new HospitalService();
-const admitRequestController = new AdmitRequestController(socketServer, redis);
-const hospitalsController = new HospitalsController(hospitalService);
+  app.use(cors());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/admit-request", admitRequestController.register());
-app.use("/hospitals", hospitalsController.register());
+  const hospitalService = new HospitalService();
+  const admitRequestController = new AdmitRequestController(
+    socketServer,
+    redis,
+    db
+  );
+  const hospitalsController = new HospitalsController(hospitalService);
 
-configSocket(socketServer, redis);
+  app.use("/admit-request", admitRequestController.register());
+  app.use("/hospitals", hospitalsController.register());
 
-httpServer.listen(+process.env.PORT, () => {
-  console.log("Server started on port", process.env.PORT);
-});
+  configSocket(socketServer, redis, db);
+
+  httpServer.listen(+process.env.PORT, () => {
+    console.log("Server started on port", process.env.PORT);
+  });
+})();
