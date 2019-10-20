@@ -47,7 +47,7 @@ export function configSocket(socketServer: Server, redis: Redis, db: Db) {
     });
 
     socket.on("admit-request-decline", async data => {
-      socket.emit("admit-request-decline", data);
+      socketServer.sockets.emit("admit-request-decline", data);
     });
   });
 }
